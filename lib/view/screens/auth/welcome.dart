@@ -47,7 +47,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     height: 250,
                     alignment: Alignment.center,
                     child: const Text(
-                      'Selamat Datang',
+                      'Selamat Datang di',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 30,
@@ -56,17 +56,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     ),
                   ),
                 ),
-                // Positioned(
-                //   top: 50,
-                //   left: 10,
-                //   child: IconButton(
-                //     onPressed: () {
-                //       Navigator.pop(context);
-                //     },
-                //     icon: const Icon(Icons.chevron_left, color: Colors.white),
-                //     iconSize: 40,
-                //   ),
-                // ),
               ],
             ),
             Padding(
@@ -75,7 +64,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 children: <Widget>[
                   const SizedBox(height: 0),
                   Image.asset(
-                    'assets/logo.png',
+                    'assets/logonew.png',
                     width: 350,
                     height: 280,
                   ),
@@ -85,7 +74,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     text: const TextSpan(
                       children: [
                         TextSpan(
-                          text: "Ubad Bali \n",
                           style: TextStyle(
                             fontSize: 35.0,
                             fontWeight: FontWeight.w600,

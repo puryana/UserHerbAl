@@ -32,10 +32,10 @@ class RamuanModel {
   factory RamuanModel.fromJson(Map<String, dynamic> json) {
     return RamuanModel(
       id_ramuan: json['id_ramuan']?.toString() ?? '',
-      id_kategori: json['id_kategori']?.toString() ?? '', // Default ke string kosong jika null
-      nama_ramuan: json['nama_ramuan'] ?? 'Tidak diketahui', // Default value
+      id_kategori: json['id_kategori']?.toString() ?? '', 
+      nama_ramuan: json['nama_ramuan'] ?? 'Tidak diketahui',
       gambar: json['gambar']?.isNotEmpty == true
-          ? '$ramuanImageBaseUrl/${json['gambar']}' // Gambar dengan path lengkap
+          ? '$ramuanImageBaseUrl/${json['gambar']}' 
           : '$ramuanImageBaseUrl/default.jpg', 
       deskripsi: json['deskripsi'] ?? 'Tidak ada deskripsi',
       manfaat: json['manfaat'] ?? 'Tidak ada manfaat',
@@ -50,10 +50,10 @@ class RamuanModel {
   // Untuk mengubah objek menjadi map (jika perlu dikirimkan dalam request)
   Map<String, dynamic> toJson() {
     return {
-      'id_ramuan': id_ramuan, // Sesuaikan dengan key JSON
+      'id_ramuan': id_ramuan, 
       'id_kategori': id_kategori,
       'nama_ramuan': nama_ramuan,
-      'gambar': gambar.replaceFirst('$ramuanImageBaseUrl/', ''), // Kirim hanya nama file
+      'gambar': gambar.replaceFirst('$ramuanImageBaseUrl/', ''), 
       'deskripsi': deskripsi,
       'manfaat': manfaat,
       'efekSamping': efekSamping,

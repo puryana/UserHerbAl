@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:herbal/core/consts/app_colors.dart';
+import 'package:herbal/core/services/loading_manager.dart';
+import 'package:herbal/core/theme/app_colors.dart';
 import 'package:herbal/core/models/penyakit_model.dart';
 import 'package:herbal/core/models/ramuan_model.dart';
 import 'package:herbal/core/models/tanaman_model.dart';
@@ -20,7 +21,6 @@ class InfoSehatScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final TextEditingController searchController = TextEditingController();
-    bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: SearchBarWidget(controller: searchController),
@@ -157,7 +157,10 @@ class InfoSehatScreen extends StatelessWidget {
           future: future,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return LoadingManager(
+                isLoading: true,
+                child: const Center(child: CircularProgressIndicator()),
+              );
             }
             if (snapshot.hasError) {
               return Center(child: Text('Error: ${snapshot.error}'));

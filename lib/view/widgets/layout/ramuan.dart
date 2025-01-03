@@ -67,7 +67,6 @@ class _RamuanTraState extends State<RamuanTra> {
                   child: Text('Tidak ada data ramuan untuk kategori ini.'),
                 );
               } else {
-                // Filter data berdasarkan id_kategori
                 final filteredList = snapshot.data!
                     .where((ramuan) => ramuan.id_kategori == widget.id_kategori)
                     .toList();
@@ -100,7 +99,7 @@ class RamuanGridView extends StatelessWidget {
         crossAxisCount: 2,
         crossAxisSpacing: 20,
         mainAxisSpacing: 20,
-        childAspectRatio: 1, // Proporsi gambar dengan teks
+        childAspectRatio: 1, 
       ),
       itemCount: ramuanList.length,
       itemBuilder: (context, index) {

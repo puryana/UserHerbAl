@@ -1,10 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:herbal/core/consts/app_colors.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:herbal/core/API/favoritApi.dart';
+import 'package:herbal/core/theme/app_colors.dart';
+import 'package:herbal/core/models/favorit_model.dart';
 import 'package:herbal/core/models/tanaman_model.dart';
+import 'package:herbal/core/utility/SharedPreferences.dart';
 
 class Detail_Tanaman extends StatefulWidget {
   final TanamanModel tanaman;
+
   const Detail_Tanaman({super.key, required this.tanaman});
 
   @override
@@ -12,12 +17,165 @@ class Detail_Tanaman extends StatefulWidget {
 }
 
 class _Detail_TanamanState extends State<Detail_Tanaman> {
+  final ApiServiceFavorit _apiService = ApiServiceFavorit();
   bool isFavorited = false;
+  String? userId;
+  String? idFavorit; 
 
-  void toggleFavorite() {
-    setState(() {
-      isFavorited = !isFavorited;
-    });
+  @override
+  void initState() {
+    super.initState();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    try {
+      await _loadUserId();
+      if (userId != null) {
+        await _checkFavoriteStatus();
+      }
+    } catch (e) {
+      print("Error initializing data: $e");
+    }
+  }
+
+  Future<void> _loadUserId() async {
+    try {
+      final id = await SharedPreferencesHelper.getUserId();
+      if (id != null) {
+        setState(() {
+          userId = id.toString();
+        });
+      }
+    } catch (e) {
+      print('Error loading user ID: $e');
+    }
+  }
+
+  Future<void> _checkFavoriteStatus() async {
+    if (userId == null) return;
+    try {
+      final favoritList = await _apiService.getFavorit(userId!);
+      final tanamanId = widget.tanaman.id_tanaman.toString();
+
+      FavoritModel? favorit;
+      try {
+        favorit = favoritList.firstWhere(
+          (favorit) => favorit.id_tanaman == tanamanId,
+        );
+      } catch (e) {
+        favorit = null; 
+      }
+
+      setState(() {
+        isFavorited = favorit != null;
+        idFavorit = favorit?.id_favorit; 
+      });
+
+      print('Status favorit untuk tanaman $tanamanId: $isFavorited');
+    } catch (e) {
+      print('Error checking favorite status: $e');
+    }
+  }
+
+  Future<void> _saveToFavorit() async {
+  if (userId == null) {
+    Fluttertoast.showToast(
+      msg: "Anda belum login. Silakan login untuk menambahkan favorit.",
+      backgroundColor: Colors.red,
+      textColor: Colors.white,
+    );
+    return;
+  }
+
+  final favorit = FavoritModel(
+    id_favorit: '',
+    id: userId!,
+    id_tanaman: widget.tanaman.id_tanaman.toString(),
+    id_ramuan: '',
+    id_produk: '',
+    id_penyakit: '',
+    id_tips: '',
+  );
+
+  try {
+    final response = await _apiService.tambahFavorit(favorit);
+    if (response.success) {
+      setState(() {
+        isFavorited = true;
+        idFavorit = response.data?['id_favorit'] ?? ''; 
+      });
+
+      Fluttertoast.showToast(
+        msg: "Berhasil ditambahkan ke favorit",
+        backgroundColor: const Color.fromRGBO(6, 132, 0, 1),
+        textColor: Colors.white,
+      );
+    } else {
+      throw Exception("Respon tidak valid: ${response.message ?? 'Error tidak diketahui.'}");
+    }
+  } catch (e) {
+    Fluttertoast.showToast(
+      msg: "Gagal menambahkan ke favorit: ${e.toString()}",
+      backgroundColor: Colors.red,
+      textColor: Colors.white,
+    );
+  }
+}
+
+  Future<void> _removeFromFavorit() async {
+    if (userId == null) {
+      Fluttertoast.showToast(
+        msg: "Anda belum login. Silakan login untuk menghapus favorit.",
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+      return;
+    }
+
+    if (idFavorit == null) {
+      Fluttertoast.showToast(
+        msg: "ID Favorit tidak ditemukan.",
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+      return;
+    }
+
+    try {
+      final response = await _apiService.deleteFavorit(idFavorit!);
+      if (response.success) {
+        setState(() {
+          isFavorited = false;
+          idFavorit = null;
+        });
+        Fluttertoast.showToast(
+          msg: "Berhasil dihapus dari favorit",
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
+      } else {
+        Fluttertoast.showToast(
+          msg: "Gagal menghapus favorit: ${response.message}",
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
+      }
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: "Gagal menghapus dari favorit: ${e.toString()}",
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+    }
+  }
+
+  void toggleFavorite() async {
+    if (isFavorited) {
+      await _removeFromFavorit();
+    } else {
+      await _saveToFavorit();
+    }
   }
 
   @override
@@ -57,16 +215,16 @@ class _Detail_TanamanState extends State<Detail_Tanaman> {
                     const Spacer(),
                     IconButton(
                       onPressed: toggleFavorite,
+                      icon: Icon(
+                        isFavorited ? CupertinoIcons.heart_fill : CupertinoIcons.heart,
+                        color: isFavorited ? Colors.red : (isDarkMode ? Colors.white : Colors.black),
+                      ),
                       style: IconButton.styleFrom(
                         backgroundColor: isDarkMode ? Colors.black : Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(45),
                         ),
                         fixedSize: const Size(50, 50),
-                      ),
-                      icon: Icon(
-                        isFavorited ? CupertinoIcons.heart_fill : CupertinoIcons.heart,
-                        color: isFavorited ? Colors.red : (isDarkMode ? Colors.white : Colors.black),
                       ),
                     ),
                   ],

@@ -3,7 +3,7 @@ import 'package:herbal/core/models/kategori_model.dart';
 import 'package:http/http.dart' as http;
 
 // Base URL untuk API
-const String baseUrl = 'http://192.168.1.16:8000';
+const String baseUrl = 'http://192.168.0.102:8000';
 
 // Endpoint untuk kategori
 const String kategoriEndpoint = '$baseUrl/api/kategori';

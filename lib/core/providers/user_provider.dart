@@ -22,12 +22,8 @@ class UserProvider with ChangeNotifier {
       final userDocDict = userDoc.data();
       if (userDocDict != null) {
         userModel = UserModel(
-          userId: userDoc.get("userId"),
           userName: userDoc.get("userName"),
-          userImage: userDoc.get("userImage"),
           userEmail: userDoc.get('userEmail'),
-          userFav: userDocDict.containsKey("userFav") ? userDoc.get("userFav") : [],
-          userHist: userDocDict.containsKey("userHist") ? userDoc.get("userHist") : [],
           createdAt: userDoc.get('createdAt'),
         );
         notifyListeners();

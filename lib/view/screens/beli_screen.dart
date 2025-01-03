@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:herbal/core/API/produkApi.dart';
 import 'package:herbal/core/models/produk_model.dart';
+import 'package:herbal/core/services/loading_manager.dart';
 import 'package:herbal/view/screens/searchBar.dart';
 import 'package:herbal/view/widgets/item_beli.dart';
 import 'package:herbal/view/widgets/kategori.dart';
-import 'package:herbal/view/widgets/title_text.dart';
 
 class BeliObatScreen extends StatelessWidget {
   const BeliObatScreen({super.key});
@@ -17,11 +17,13 @@ class BeliObatScreen extends StatelessWidget {
     return Scaffold(
       appBar: SearchBarWidget(controller: searchController),
       body: FutureBuilder<List<ProdukModel>>(
-        // Mengambil data produk dari API
         future: getProduk(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return LoadingManager(
+              isLoading: true, 
+              child: Center(child: CircularProgressIndicator()),
+            );
           }
 
           if (snapshot.hasError) {
@@ -34,25 +36,39 @@ class BeliObatScreen extends StatelessWidget {
 
           List<ProdukModel> produkList = snapshot.data!;
 
-          return SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: TitlesTextWidget(label: "Kategori Populer"),
-                  ),
-                  const SizedBox(height: 10),
-                  Kategori_Widgets(itemCount: jumlahKategori),
-                  const SizedBox(height: 20),
-                  Center(
-                    child: TitlesTextWidget(label: "Produk Paling Dicari"),
-                  ),
-                  const SizedBox(height: 20),
-                  // Kirim produkList ke ItemBeliWidget
-                  ItemBeliWidget(produkList: produkList), 
-                ],
+          return LoadingManager(
+            isLoading: false, 
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Text(
+                        "Kategori Populer",
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Kategori_Widgets(itemCount: jumlahKategori),
+                    const SizedBox(height: 20),
+                    Center(
+                      child: Text(
+                        "Produk Paling Dicari",
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    ItemBeliWidget(produkList: produkList), 
+                  ],
+                ),
               ),
             ),
           );

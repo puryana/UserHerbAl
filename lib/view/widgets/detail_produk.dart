@@ -1,10 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:herbal/core/consts/app_colors.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:herbal/core/API/keranjangApi.dart';
+import 'package:herbal/core/theme/app_colors.dart';
+import 'package:herbal/core/models/keranjang_model.dart';
 import 'package:herbal/core/models/produk_model.dart';
+import 'package:herbal/core/utility/SharedPreferences.dart';
 
 class DetailProduk extends StatefulWidget {
-  final ProdukModel produk; 
+  final ProdukModel produk;
 
   const DetailProduk({super.key, required this.produk});
 
@@ -14,6 +18,25 @@ class DetailProduk extends StatefulWidget {
 
 class _DetailProdukState extends State<DetailProduk> {
   bool isFavorited = false;
+  int jumlah = 1;
+  String userId = "";
+  @override
+  void initState() {
+    super.initState();
+    _initializeUserId();
+  }
+
+  Future<void> _initializeUserId() async {
+    final id = await SharedPreferencesHelper.getUserId();
+    if (id != null) {
+      setState(() {
+        userId = id;
+      });
+    } else {
+      print("ID user tidak ditemukan. Pastikan pengguna sudah login.");
+    }
+  }
+
 
   void toggleFavorite() {
     setState(() {
@@ -21,10 +44,54 @@ class _DetailProdukState extends State<DetailProduk> {
     });
   }
 
+  Future<void> handleTambahKeKeranjang() async {
+    if (userId.isEmpty) {
+      Fluttertoast.showToast(
+        msg: "ID user tidak ditemukan. Silakan login terlebih dahulu.",
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+      return;
+    }
+  
+  final keranjang = KeranjangModel(
+      id_keranjang: 0,
+      idUser: userId,
+      idProduk: widget.produk.id_produk,
+      jumlah: jumlah,
+      produk: widget.produk,
+    );
+  
+  try {
+      final apiService = ApiServiceKeranjang();
+      final response = await apiService.tambahKeKeranjang(keranjang);
+
+      if (response.success) {
+        Fluttertoast.showToast(
+          msg: "Produk berhasil ditambahkan ke keranjang!",
+          backgroundColor: const Color.fromRGBO(6, 132, 0, 1),
+          textColor: Colors.white,
+        );
+      } else {
+        Fluttertoast.showToast(
+          msg: "Gagal menambahkan ke keranjang: ${response.message}",
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
+      }
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: "Terjadi kesalahan: $e",
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final produk = widget.produk; 
+    final produk = widget.produk;
 
     return Scaffold(
       backgroundColor: isDarkMode ? AppColors.darkScaffoldColor : AppColors.lightScaffoldColor,
@@ -41,7 +108,6 @@ class _DetailProdukState extends State<DetailProduk> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Baris Tombol Navigasi Kembali dan Favorit
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Row(
@@ -98,7 +164,6 @@ class _DetailProdukState extends State<DetailProduk> {
                 ],
               ),
             ),
-            // Gambar Produk
             Center(
               child: Container(
                 margin: const EdgeInsets.only(top: 5),
@@ -109,7 +174,6 @@ class _DetailProdukState extends State<DetailProduk> {
                 ),
               ),
             ),
-            // Box Hijau dengan Harga dan Nama Produk
             Container(
               width: MediaQuery.of(context).size.width * 0.9,
               margin: const EdgeInsets.only(bottom: 16),
@@ -153,85 +217,73 @@ class _DetailProdukState extends State<DetailProduk> {
                 ],
               ),
             ),
-
             Container(
-            padding: const EdgeInsets.all(12),
-            width: MediaQuery.of(context).size.width * 0.9,
-            decoration: BoxDecoration(
-              color: isDarkMode ? AppColors.darkCardColor : AppColors.lightCardColor,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                if (!isDarkMode)
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.3),
-                    spreadRadius: 2,
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
+              padding: const EdgeInsets.all(12),
+              width: MediaQuery.of(context).size.width * 0.9,
+              decoration: BoxDecoration(
+                color: isDarkMode ? AppColors.darkCardColor : AppColors.lightCardColor,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 8),
+                  Text(
+                    produk.deskripsi,
+                    textAlign: TextAlign.justify,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: isDarkMode ? AppColors.darkTextColor : Colors.black,
+                    ),
                   ),
-              ],
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Manfaat',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    produk.manfaat,
+                    textAlign: TextAlign.justify,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: isDarkMode ? AppColors.darkTextColor : Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Efek Samping',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    produk.efekSamping,
+                    textAlign: TextAlign.justify,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: isDarkMode ? AppColors.darkTextColor : Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Waktu Konsumsi',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    produk.waktuKonsumsi,
+                    textAlign: TextAlign.justify,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: isDarkMode ? AppColors.darkTextColor : Colors.black,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 8),
-                Text(
-                  produk.deskripsi ?? "Tidak ada deskripsi.",
-                  textAlign: TextAlign.justify, // Rata kiri-kanan
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: isDarkMode ? AppColors.darkTextColor : Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Manfaat',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  produk.manfaat ?? "Tidak ada manfaat.",
-                  textAlign: TextAlign.justify, // Rata kiri-kanan
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: isDarkMode ? AppColors.darkTextColor : Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Efek Samping',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  produk.efekSamping ?? "Tidak ada efek samping.",
-                  textAlign: TextAlign.justify, // Rata kiri-kanan
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: isDarkMode ? AppColors.darkTextColor : Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Waktu Konsumsi',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  produk.waktuKonsumsi ?? "Tidak ada waktu konsumsi.",
-                  textAlign: TextAlign.justify, // Rata kiri-kanan
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: isDarkMode ? AppColors.darkTextColor : Colors.black,
-                  ),
-                ),
-              ],
-            ),
-          )
-
           ],
         ),
       ),
-      // Bottom Navigation Bar
       bottomNavigationBar: Container(
         height: 60,
         color: isDarkMode ? AppColors.darkCardColor : Colors.white,
@@ -253,13 +305,17 @@ class _DetailProdukState extends State<DetailProduk> {
               flex: 2,
               child: IconButton(
                 icon: Icon(Icons.shopping_cart, color: isDarkMode ? AppColors.darkPrimary : AppColors.lightPrimary, size: 28),
-                onPressed: () {},
+                onPressed: () {
+                    handleTambahKeKeranjang();
+                },
               ),
             ),
             Expanded(
               flex: 6,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: isDarkMode ? AppColors.darkPrimary : AppColors.lightPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 16),

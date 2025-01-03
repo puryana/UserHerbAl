@@ -14,20 +14,20 @@ class KategoriModel {
   // Membuat factory constructor untuk memparsing JSON ke dalam objek KategoriModel
   factory KategoriModel.fromJson(Map<String, dynamic> json) {
     return KategoriModel(
-      id_kategori: json['id_kategori']?.toString() ?? '', // Default ke string kosong jika null
-      nama_kategori: json['nama_kategori'] ?? 'Tidak diketahui', // Default value
+      id_kategori: json['id_kategori']?.toString() ?? '', 
+      nama_kategori: json['nama_kategori'] ?? 'Tidak diketahui', 
       gambar: json['gambar']?.isNotEmpty == true
-          ? '$kategoriImageBaseUrl/${json['gambar']}' // Gambar dengan path lengkap
-          : '$kategoriImageBaseUrl/default.jpg', // Gambar default jika null
+          ? '$kategoriImageBaseUrl/${json['gambar']}' 
+          : '$kategoriImageBaseUrl/default.jpg', 
     );
   }
 
   // Untuk mengubah objek menjadi map (jika perlu dikirimkan dalam request)
   Map<String, dynamic> toJson() {
     return {
-      'id_kategori': id_kategori, // Sesuaikan dengan key JSON
+      'id_kategori': id_kategori, 
       'nama_kategori': nama_kategori,
-      'gambar': gambar.replaceFirst('$kategoriImageBaseUrl/', ''), // Kirim hanya nama file
+      'gambar': gambar.replaceFirst('$kategoriImageBaseUrl/', ''), 
     };
   }
 }

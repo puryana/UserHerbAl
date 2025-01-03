@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:herbal/core/consts/app_colors.dart'; 
+import 'package:herbal/core/theme/app_colors.dart'; 
 
 class Notifikasi extends StatefulWidget {
   const Notifikasi({Key? key}) : super(key: key);

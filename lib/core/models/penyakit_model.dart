@@ -24,11 +24,11 @@ class PenyakitModel {
   // Membuat factory constructor untuk memparsing JSON ke dalam objek 
   factory PenyakitModel.fromJson(Map<String, dynamic> json) {
     return PenyakitModel(
-      id_penyakit: json['id_penyakit']?.toString() ?? '', // Default ke string kosong jika null
-      nama_penyakit: json['nama_penyakit'] ?? 'Tidak diketahui', // Default value
+      id_penyakit: json['id_penyakit']?.toString() ?? '',
+      nama_penyakit: json['nama_penyakit'] ?? 'Tidak diketahui', 
       gambar: json['gambar']?.isNotEmpty == true
-          ? '$penyakitImageBaseUrl/${json['gambar']}' // Gambar dengan path lengkap
-          : '$penyakitImageBaseUrl/default.jpg', // Gambar default jika null
+          ? '$penyakitImageBaseUrl/${json['gambar']}'
+          : '$penyakitImageBaseUrl/default.jpg', 
       deskripsi: json['deskripsi'] ?? 'Tidak ada deskripsi',
       penyebab: json['penyebab'] ?? 'Tidak ada penyebab',
       gejala: json['gejala'] ?? 'Tidak ada gejala',
@@ -40,9 +40,9 @@ class PenyakitModel {
   // Untuk mengubah objek menjadi map (jika perlu dikirimkan dalam request)
   Map<String, dynamic> toJson() {
     return {
-      'id_penyakit': id_penyakit, // Sesuaikan dengan key JSON
+      'id_penyakit': id_penyakit, 
       'nama_penyakit': nama_penyakit,
-      'gambar': gambar.replaceFirst('$penyakitImageBaseUrl/', ''), // Kirim hanya nama file
+      'gambar': gambar.replaceFirst('$penyakitImageBaseUrl/', ''),
       'deskripsi': deskripsi,
       'penyebab': penyebab,
       'gejala': gejala,

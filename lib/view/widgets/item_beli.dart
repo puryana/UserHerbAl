@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:herbal/core/consts/app_colors.dart';
+import 'package:herbal/core/theme/app_colors.dart';
 import 'package:herbal/core/models/produk_model.dart';
+import 'package:herbal/view/screens/auth/welcome.dart';
 import 'package:herbal/view/widgets/detail_produk.dart';
 
 class ItemBeliWidget extends StatefulWidget {
@@ -13,7 +15,6 @@ class ItemBeliWidget extends StatefulWidget {
 }
 
 class _ItemBeliWidgetState extends State<ItemBeliWidget> {
-  // Map untuk menyimpan status favorit setiap produk
   final Map<int, bool> _favorites = {};
 
   void toggleFavorite(int index) {
@@ -24,7 +25,8 @@ class _ItemBeliWidgetState extends State<ItemBeliWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // Menentukan apakah tema saat ini gelap atau terang
+    User? user = FirebaseAuth.instance.currentUser;
+
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return GridView.builder(
@@ -56,7 +58,6 @@ class _ItemBeliWidgetState extends State<ItemBeliWidget> {
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              // Ikon jantung untuk favorit
               Positioned(
                 top: -10,
                 right: -10,
@@ -86,7 +87,6 @@ class _ItemBeliWidgetState extends State<ItemBeliWidget> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   InkWell(
-                  
                     child: Container(
                       margin: const EdgeInsets.all(10),
                       child: Image.network(
@@ -113,7 +113,7 @@ class _ItemBeliWidgetState extends State<ItemBeliWidget> {
                     ),
                   ),
                   Text(
-                    "Rp. ${produk.harga}", // Tambahkan "Rp." pada harga
+                    "Rp. ${produk.harga}",
                     style: TextStyle(
                       color: isDarkMode ? AppColors.darkTextColor : Colors.black,
                       fontSize: 16,
@@ -125,12 +125,23 @@ class _ItemBeliWidgetState extends State<ItemBeliWidget> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => DetailProduk(produk: produk),
-                          ),
-                        );
+                        if (user == null) {
+                          // Jika user belum login, arahkan ke WelcomeScreen
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const WelcomeScreen(),
+                            ),
+                          );
+                        } else {
+                          // Jika user sudah login, arahkan ke DetailProduk
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DetailProduk(produk: produk),
+                            ),
+                          );
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: isDarkMode ? AppColors.darkPrimary : AppColors.lightPrimary,

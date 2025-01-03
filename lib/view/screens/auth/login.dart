@@ -1,9 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:herbal/core/API/userApi.dart';
 import 'package:herbal/core/providers/my_app_functions.dart';
 import 'package:herbal/core/services/loading_manager.dart';
 import 'package:herbal/core/services/validator.dart';
+import 'package:herbal/core/utility/SharedPreferences.dart';
 import 'package:herbal/root_screen.dart';
 import 'package:herbal/view/screens/auth/forgot_password.dart';
 import 'package:herbal/view/screens/auth/registrasi.dart';
@@ -32,7 +34,6 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
-    // Focus Nodes
     _emailFocusNode = FocusNode();
     _passwordFocusNode = FocusNode();
     super.initState();
@@ -43,7 +44,6 @@ class _LoginScreenState extends State<LoginScreen> {
     if (mounted) {
       _emailController.dispose();
       _passwordController.dispose();
-      // Focus Nodes
       _emailFocusNode.dispose();
       _passwordFocusNode.dispose();
     }
@@ -60,17 +60,38 @@ class _LoginScreenState extends State<LoginScreen> {
         _isLoading = true;
       });
 
-      await auth.signInWithEmailAndPassword(
+      final UserCredential userCredential = await auth.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+
       Fluttertoast.showToast(
         msg: "Login berhasil!",
-        backgroundColor: Color.fromRGBO(6, 132, 0, 1),
+        backgroundColor: const Color.fromRGBO(6, 132, 0, 1),
         textColor: Colors.white,
       );
-      
-      Navigator.pushReplacementNamed(context, RootScreen.routeName);
+
+      final String firebaseUid = userCredential.user!.uid;
+
+      final apiResponse = await sendUIDToAPI(firebaseUid);
+      if (apiResponse.success && apiResponse.data != null) {
+        try {
+          await SharedPreferencesHelper.saveUserIdFromAPIResponse(apiResponse.data!);
+          print('ID berhasil disimpan di SharedPreferences.');
+        } catch (e) {
+          print('Gagal menyimpan ID dari respons API: $e');
+        }
+      } else {
+        print('Gagal mengambil ID dari API: ${apiResponse.message}');
+      }
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (context) => RootScreen(),
+        ),
+        (route) => false,
+      );
     } on FirebaseAuthException catch (error) {
       String errorMessage;
       switch (error.code) {
@@ -102,7 +123,10 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               const Icon(Icons.error, color: Colors.white),
               const SizedBox(width: 10),
-              Text("Terjadi kesalahan: ${error.toString()}", style: const TextStyle(color: Colors.white)),
+              Text(
+                "Terjadi kesalahan: ${error.toString()}",
+                style: const TextStyle(color: Colors.white),
+              ),
             ],
           ),
           backgroundColor: Colors.red,
@@ -119,6 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 }
+
 
   @override
   Widget build(BuildContext context) {
@@ -174,7 +199,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         children: <Widget>[
                           const SizedBox(height: 10),
                           const Text(
-                            'Selamat datang Kembali',
+                            'Selamat datang Kembali Silahkan Login',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -186,11 +211,21 @@ class _LoginScreenState extends State<LoginScreen> {
                             focusNode: _emailFocusNode,
                             decoration: InputDecoration(
                               labelText: 'Email',
+                              filled: true, 
+                              fillColor: Colors.white, 
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(30),
+                                borderSide: const BorderSide(color: Colors.grey),
                               ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 15, horizontal: 20),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(30),
+                                borderSide: const BorderSide(color: Colors.grey),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(30),
+                                borderSide: const BorderSide(color: Color.fromRGBO(6, 132, 0, 1)),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                             ),
                             onFieldSubmitted: (value) {
                               FocusScope.of(context)
@@ -210,11 +245,22 @@ class _LoginScreenState extends State<LoginScreen> {
                                 obscureText: value,
                                 decoration: InputDecoration(
                                   labelText: 'Password',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 15, horizontal: 20),
+                                  filled: true, 
+                                    fillColor: Colors.white, 
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                      borderSide: const BorderSide(color: Colors.grey),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                      borderSide: const BorderSide(color: Colors.grey),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                      borderSide: const BorderSide(color: Color.fromRGBO(6, 132, 0, 1)),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+
                                   suffixIcon: IconButton(
                                     onPressed: () {
                                       setState(() {
@@ -287,8 +333,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 return; // Keluar dari metode onPressed jika email atau password kosong
                               }
 
-                              // Lanjutkan proses login jika email dan password telah dimasukkan
-                              await _loginFct();
+                            await _loginFct();
                             },
                             color: const Color.fromRGBO(6, 132, 0, 1),
                             minWidth: double.infinity,
@@ -297,7 +342,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               borderRadius: BorderRadius.circular(30),
                             ),
                             child: const Text(
-                              'Sign in',
+                              'Login',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 20,

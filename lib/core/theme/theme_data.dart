@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:herbal/core/consts/app_colors.dart';
+import 'package:herbal/core/theme/app_colors.dart';
 
 class Styles {
   static ThemeData themeData(

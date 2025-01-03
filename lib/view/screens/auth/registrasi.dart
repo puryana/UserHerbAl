@@ -1,18 +1,15 @@
-import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:herbal/core/services/loading_manager.dart';
 import 'package:herbal/core/services/validator.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:herbal/root_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:herbal/core/providers/my_app_functions.dart';
 import 'package:herbal/core/providers/user_provider.dart';
 import 'package:herbal/view/screens/auth/login.dart';
-import 'package:herbal/view/screens/home_screen.dart';
-
+import 'package:herbal/core/api/userAPI.dart';
 
 class RegisterScreen extends StatefulWidget {
   static const routeName = "/RegisterScreen";
@@ -37,10 +34,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _confirmPasswordFocusNode;
 
   final _formkey = GlobalKey<FormState>();
-  XFile? _pickedImage;
   bool _isLoading = false;
   final auth = FirebaseAuth.instance;
-  String? userImageUrl;
 
   @override
   void initState() {
@@ -48,7 +43,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
     _confirmPasswordController = TextEditingController();
-    // Focus Nodes
     _nameFocusNode = FocusNode();
     _emailFocusNode = FocusNode();
     _passwordFocusNode = FocusNode();
@@ -59,33 +53,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   void dispose() {
-    if (mounted) {
-      _nameController.dispose();
-      _emailController.dispose();
-      _passwordController.dispose();
-      _confirmPasswordController.dispose();
-      // Focus Nodes
-      _nameFocusNode.dispose();
-      _emailFocusNode.dispose();
-      _passwordFocusNode.dispose();
-      _confirmPasswordFocusNode.dispose();
-      _isObscure.dispose();
-    }
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    _nameFocusNode.dispose();
+    _emailFocusNode.dispose();
+    _passwordFocusNode.dispose();
+    _confirmPasswordFocusNode.dispose();
+    _isObscure.dispose();
     super.dispose();
   }
 
   Future<void> _registerFCT() async {
     final isValid = _formkey.currentState!.validate();
     FocusScope.of(context).unfocus();
-    if (_pickedImage == null) {
-      MyAppFunctions.showErrorOrWarningDialog(
-        context: context,
-        subtitle: "Pastikan untuk mengambil gambar",
-        fct: () {},
-      );
-      print("Gambar tidak dipilih");
-      return;
-    }
+
     if (!isValid) {
       print("Formulir tidak valid");
       return;
@@ -118,35 +101,36 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       final String uid = user.uid;
 
-      // Initialize Firebase Storage
-      final FirebaseStorage storage = FirebaseStorage.instance;
-      final ref = storage.ref().child("usersImages").child("$uid.jpg");
-      await ref.putFile(File(_pickedImage!.path));
-      userImageUrl = await ref.getDownloadURL();
-      print("Gambar diunggah ke: $userImageUrl");
-
+      // Simpan data ke Firestore
       await FirebaseFirestore.instance.collection("users").doc(uid).set({
-        'userId': uid,
         'userName': _nameController.text,
-        'userImage': userImageUrl,
         'userEmail': _emailController.text.toLowerCase(),
         'createdAt': Timestamp.now(),
-        'userFav': [],
-        'userHist': [],
       });
       print("Data pengguna disimpan ke Firestore");
+
+      // Simpan UID ke database SQL melalui API
+      await sendUIDToAPI(uid,
+          name: _nameController.text, email: _emailController.text);
+      print("UID berhasil disimpan di database SQL melalui API");
 
       Fluttertoast.showToast(
         msg: "Registrasi berhasil!",
         backgroundColor: Color.fromRGBO(6, 132, 0, 1),
         textColor: Colors.white,
       );
-      
+
       final userProvider = Provider.of<UserProvider>(context, listen: false);
       await userProvider.fetchUserInfo();
 
       if (!mounted) return;
-      Navigator.pushReplacementNamed(context, HomeScreen.routeName);
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (context) => RootScreen(),
+        ),
+        (route) => false,
+      );
     } on FirebaseAuthException catch (error) {
       await MyAppFunctions.showErrorOrWarningDialog(
         context: context,
@@ -173,26 +157,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _isLoading = false;
       });
     }
-  }
-
-  Future<void> localImagePicker() async {
-    final ImagePicker imagePicker = ImagePicker();
-    await MyAppFunctions.imagePickerDialog(
-      context: context,
-      cameraFCT: () async {
-        _pickedImage = await imagePicker.pickImage(source: ImageSource.camera);
-        setState(() {});
-      },
-      galleryFCT: () async {
-        _pickedImage = await imagePicker.pickImage(source: ImageSource.gallery);
-        setState(() {});
-      },
-      removeFCT: () {
-        setState(() {
-          _pickedImage = null;
-        });
-      },
-    );
   }
 
   void _showErrorSnackbar(String message) {
@@ -229,9 +193,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: Container(
                       color: Color.fromRGBO(6, 132, 0, 1),
                       height: 250,
-                      alignment: Alignment.topCenter, // Align text to top center
+                      alignment: Alignment.topCenter,
                       child: Padding(
-                        padding: const EdgeInsets.only(top: 80), // Move text slightly down
+                        padding: const EdgeInsets.only(top: 80),
                         child: Text(
                           "Registrasi Akun",
                           style: TextStyle(
@@ -252,53 +216,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       },
                       icon: Icon(Icons.chevron_left, color: Colors.white),
                       iconSize: 40,
-                    ),
-                  ),
-                  Positioned(
-                    top: 130,
-                    left: 0,
-                    right: 0,
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: InkWell(
-                        onTap: () {
-                          localImagePicker();
-                        },
-                        child: Stack(
-                          children: [
-                            Container(
-                              width: 120,
-                              height: 120,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: const Color(0xffD6D6D6),
-                              ),
-                            ),
-                            Positioned.fill(
-                              child: Align(
-                                alignment: Alignment.center,
-                                child: _pickedImage == null
-                                    ? Icon(
-                                        Icons.camera_alt_outlined,
-                                        size: 50,
-                                        color: Colors.white,
-                                      )
-                                    : Container(
-                                        width: 120,
-                                        height: 120,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          image: DecorationImage(
-                                            image: FileImage(File(_pickedImage!.path)),
-                                            fit: BoxFit.cover,
-                                          ),
-                                        ),
-                                      ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
                     ),
                   ),
                 ],
@@ -506,20 +423,4 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
     );
   }
-}
-
-class GreenClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    var path = Path();
-    path.lineTo(0, size.height - 80);
-    path.quadraticBezierTo(
-        size.width / 2, size.height, size.width, size.height - 80);
-    path.lineTo(size.width, 0);
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }

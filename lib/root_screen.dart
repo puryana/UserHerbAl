@@ -1,7 +1,7 @@
-import 'dart:developer';  // Tambahkan import untuk log
+import 'dart:developer'; 
 import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
-import 'package:herbal/core/consts/app_colors.dart';
+import 'package:herbal/core/theme/app_colors.dart';
 import 'package:herbal/core/providers/user_provider.dart';
 import 'package:herbal/view/screens/beli_screen.dart';
 import 'package:herbal/view/screens/home_screen.dart';
@@ -32,7 +32,7 @@ class _RootScreenState extends State<RootScreen> {
     screens = const [
       HomeScreen(),
       BeliObatScreen(),
-      ChatScreen(),
+      Chat(),
       InfoSehatScreen(),
       ProfilScreen(),
     ];
@@ -50,7 +50,7 @@ class _RootScreenState extends State<RootScreen> {
         await userProvider.fetchUserInfo();
       }
     } catch (error) {
-      log(error.toString());  // Pastikan import dart:developer sudah ada
+      log(error.toString());  
     }
     setState(() {});
   }
@@ -63,11 +63,10 @@ class _RootScreenState extends State<RootScreen> {
     super.didChangeDependencies();
   }
 
-  // Fungsi untuk mengubah tab
   void onTabTapped(int index) {
     setState(() {
       currentScreen = index;
-      controller.jumpToPage(currentScreen); // Pindah ke halaman sesuai tab yang dipilih
+      controller.jumpToPage(currentScreen); 
     });
   }
 
@@ -92,7 +91,7 @@ class _RootScreenState extends State<RootScreen> {
               height: 80,
               child: BottomNavigationBar(
                 currentIndex: currentScreen,
-                onTap: onTabTapped,  // Gunakan fungsi yang sudah dibuat
+                onTap: onTabTapped, 
                 type: BottomNavigationBarType.fixed,
                 selectedItemColor: isDarkMode ? AppColors.darkPrimary : AppColors.lightPrimary,
                 unselectedItemColor: Colors.grey,
@@ -155,12 +154,31 @@ class _RootScreenState extends State<RootScreen> {
                     ),
                   ],
                 ),
-                child: Icon(
-                  Icons.search,
-                  size: 30,
-                  color: currentScreen == 2
-                      ? Colors.white
-                      : (isDarkMode ? AppColors.darkPrimary : AppColors.lightPrimary),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      'assets/icon.png',
+                      width: 30,
+                      height: 30,
+                      color: currentScreen == 2
+                          ? Colors.white
+                          : (isDarkMode
+                              ? AppColors.darkPrimary
+                              : AppColors.lightPrimary),
+                    ),
+                    Text(
+                      "Asisstant",
+                      style: TextStyle(
+                        color: currentScreen == 2
+                            ? Colors.white
+                            : (isDarkMode
+                                ? AppColors.darkPrimary
+                                : AppColors.lightPrimary),
+                        fontSize: 10,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -177,16 +195,16 @@ class BottomNavBarClipper extends CustomClipper<Path> {
     final path = Path();
     final double curveHeight = 40.0;
 
-    path.lineTo(size.width * 0.35, 0); 
-
+    path.lineTo(size.width * 0.35, 0);
     path.quadraticBezierTo(
-      size.width * 0.5, -curveHeight,
-      size.width * 0.65, 0, 
+      size.width * 0.5,
+      -curveHeight,
+      size.width * 0.65,
+      0,
     );
-
-    path.lineTo(size.width, 0); 
-    path.lineTo(size.width, size.height); 
-    path.lineTo(0, size.height); 
+    path.lineTo(size.width, 0);
+    path.lineTo(size.width, size.height);
+    path.lineTo(0, size.height);
     path.close();
 
     return path;
@@ -196,4 +214,20 @@ class BottomNavBarClipper extends CustomClipper<Path> {
   bool shouldReclip(covariant CustomClipper<Path> oldClipper) {
     return false; 
   }
+}
+
+//mengatur status login, misalnya saat login berhasil
+Future<void> onLoginSuccess(BuildContext context) async {
+  final prefs = await SharedPreferences.getInstance();
+  prefs.setBool('isLoggedIn', true);
+  Provider.of<UserProvider>(context, listen: false).fetchUserInfo();
+  Navigator.of(context).pushReplacementNamed(HomeScreen.routeName);
+}
+
+// mengatur status logout, misalnya saat logout berhasil
+Future<void> onLogout(BuildContext context) async {
+  final prefs = await SharedPreferences.getInstance();
+  prefs.setBool('isLoggedIn', false);
+  Provider.of<UserProvider>(context, listen: false).userModel = null;
+  Navigator.of(context).pushReplacementNamed(HomeScreen.routeName);
 }

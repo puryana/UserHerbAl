@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:herbal/core/API/kategoriApi.dart';
-import 'package:herbal/core/consts/app_colors.dart';
+import 'package:herbal/core/theme/app_colors.dart';
 import 'package:herbal/core/models/kategori_model.dart';
 import 'package:herbal/view/widgets/layout/ramuan.dart';
 
@@ -97,8 +97,8 @@ class KategoriCard extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (context) => RamuanTra(
-              id_kategori: kategori.id_kategori, // Kirim ID kategori
-              nama_kategori: kategori.nama_kategori, // Kirim nama kategori (opsional)
+              id_kategori: kategori.id_kategori, 
+              nama_kategori: kategori.nama_kategori, 
             ),
           ),
         );

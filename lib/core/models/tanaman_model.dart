@@ -24,10 +24,10 @@ class TanamanModel {
   // Membuat factory constructor untuk memparsing JSON ke dalam objek tanamanModel
   factory TanamanModel.fromJson(Map<String, dynamic> json) {
     return TanamanModel(
-      id_tanaman: json['id_tanaman']?.toString() ?? '', // Default ke string kosong jika null
-      nama_tanaman: json['nama_tanaman'] ?? 'Tidak diketahui', // Default value
+      id_tanaman: json['id_tanaman']?.toString() ?? '', 
+      nama_tanaman: json['nama_tanaman'] ?? 'Tidak diketahui', 
       gambar: json['gambar']?.isNotEmpty == true
-          ? '$tanamanImageBaseUrl/${json['gambar']}' // Gambar dengan path lengkap
+          ? '$tanamanImageBaseUrl/${json['gambar']}' 
           : '$tanamanImageBaseUrl/default.jpg',
       deskripsi: json['deskripsi'] ?? 'Tidak diketahui',
       bagian_tumbuhan: json['bagian_tumbuhan'] ?? 'Tidak diketahui', 
@@ -40,7 +40,7 @@ class TanamanModel {
   // Untuk mengubah objek menjadi map (jika perlu dikirimkan dalam request)
   Map<String, dynamic> toJson() {
     return {
-      'id_tanaman': id_tanaman, // Sesuaikan dengan key JSON
+      'id_tanaman': id_tanaman, 
       'nama_tanaman': nama_tanaman,
       'gambar': gambar.replaceFirst('$tanamanImageBaseUrl/', ''), 
       'deskripsi': deskripsi,

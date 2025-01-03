@@ -1,4 +1,3 @@
-
 import 'package:herbal/core/API/produkApi.dart';
 
 class ProdukModel {
@@ -7,6 +6,7 @@ class ProdukModel {
   final String nama_produk;
   final String harga;
   final String gambar;
+  final int stock;
   final String deskripsi;
   final String manfaat;
   final String efekSamping;
@@ -18,37 +18,38 @@ class ProdukModel {
     required this.nama_produk,
     required this.harga,
     required this.gambar,
+    required this.stock,
     required this.deskripsi,
     required this.manfaat,
     required this.efekSamping,
     required this.waktuKonsumsi,
   });
 
-  // Membuat factory constructor untuk memparsing JSON ke dalam objek KategoriModel
   factory ProdukModel.fromJson(Map<String, dynamic> json) {
     return ProdukModel(
       id_produk: json['id_produk']?.toString() ?? '',
-      id_kategori: json['id_kategori']?.toString() ?? '', // Default ke string kosong jika null
-      nama_produk: json['nama_produk'] ?? 'Tidak diketahui',
-      harga: json['harga'] ?? 'Tidak ada harga', // Default value
-      gambar: json['gambar']?.isNotEmpty == true
-          ? '$produkImageBaseUrl/${json['gambar']}' // Gambar dengan path lengkap
-          : '$produkImageBaseUrl/default.jpg', 
-      deskripsi: json['deskripsi'] ?? 'Tidak ada deskripsi',
-      manfaat: json['manfaat'] ?? 'Tidak ada manfaat',
-      efekSamping: json['efekSamping'] ?? 'Tidak ada efek samping',
-      waktuKonsumsi: json['waktuKonsumsi'] ?? 'Tidak ada waktu konsumsi',
+      id_kategori: json['id_kategori']?.toString() ?? '',
+      nama_produk: json['nama_produk']?.toString() ?? 'Tidak diketahui',
+      harga: json['harga']?.toString() ?? 'Tidak ada harga',
+      gambar: (json['gambar'] != null && json['gambar'].isNotEmpty)
+          ? '$produkImageBaseUrl/${json['gambar']}'
+          : '$produkImageBaseUrl/default.jpg',
+      stock: json['stock'] != null ? int.tryParse(json['stock'].toString()) ?? 0 : 0,
+      deskripsi: json['deskripsi']?.toString() ?? 'Tidak ada deskripsi',
+      manfaat: json['manfaat']?.toString() ?? 'Tidak ada manfaat',
+      efekSamping: json['efekSamping']?.toString() ?? 'Tidak ada efek samping',
+      waktuKonsumsi: json['waktuKonsumsi']?.toString() ?? 'Tidak ada waktu konsumsi',
     );
   }
 
-  // Untuk mengubah objek menjadi map (jika perlu dikirimkan dalam request)
   Map<String, dynamic> toJson() {
     return {
-      'id_produk': id_produk, 
+      'id_produk': id_produk,
       'id_kategori': id_kategori,
       'nama_produk': nama_produk,
       'harga': harga,
-      'gambar': gambar.replaceFirst('$produkImageBaseUrl/', ''), 
+      'gambar': gambar.replaceFirst('$produkImageBaseUrl/', ''),
+      'stock': stock,
       'deskripsi': deskripsi,
       'manfaat': manfaat,
       'efekSamping': efekSamping,

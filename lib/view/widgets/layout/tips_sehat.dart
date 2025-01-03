@@ -52,7 +52,7 @@ class _Tips_SehatState extends State<Tips_Sehat> {
               children: [
                 const SizedBox(height: 10),
                 FutureBuilder<List<TipsModel>>(
-                  future: _tipsFuture, // Menggunakan Future yang sudah ada
+                  future: _tipsFuture, 
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
@@ -122,7 +122,7 @@ class Tampil_tipsSehat extends StatelessWidget {
                     topRight: Radius.circular(15),
                   ),
                   image: DecorationImage(
-                    image: NetworkImage(listdataSehat.gambar), // Menggunakan NetworkImage jika gambar dari URL
+                    image: NetworkImage(listdataSehat.gambar), 
                     fit: BoxFit.cover,
                   ),
                 ),

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:another_carousel_pro/another_carousel_pro.dart';
-import 'package:herbal/core/API/tipsApi.dart'; // Import API for Tips
-import 'package:herbal/core/API/tanamanApi.dart'; // Import API for Tanaman
+import 'package:herbal/core/API/tipsApi.dart'; 
+import 'package:herbal/core/API/tanamanApi.dart'; 
 import 'package:herbal/core/models/tanaman_model.dart';
 import 'package:herbal/core/models/tips_model.dart';
+import 'package:herbal/core/services/loading_manager.dart';
 import 'package:herbal/view/screens/searchBar.dart';
 import 'package:herbal/view/widgets/detail_tanaman.dart';
 import 'package:herbal/view/widgets/detail_tipsSehat.dart';
@@ -23,40 +24,53 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final int jumlahKategori = 5;
-  List<TanamanModel> _listTanaman = []; // Tanaman list di sini diisi dari API
-  List<TipsModel> _listdataSehat = []; 
+  List<TanamanModel> _listTanaman = [];
+  List<TipsModel> _listdataSehat = [];
   final TextEditingController searchController = TextEditingController();
 
-  // Fungsi untuk mengambil data tanaman dari API
+  bool _isLoading = false; 
+
   Future<void> _fetchTanamanData() async {
+    setState(() {
+      _isLoading = true; 
+    });
     try {
-      List<TanamanModel> tanaman = await getTanaman(); // Mengambil tanaman dari API
+      List<TanamanModel> tanaman = await getTanaman();
       setState(() {
         _listTanaman = tanaman;
       });
     } catch (e) {
-      // Tangani error jika gagal mengambil data
       print('Error fetching tanaman: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
-  // Fungsi untuk mengambil data tips kesehatan dari API
   Future<void> _fetchTipsData() async {
+    setState(() {
+      _isLoading = true; 
+    });
     try {
-      List<TipsModel> tips = await getTips();  // Mengambil data tips dari API
+      List<TipsModel> tips = await getTips();
       setState(() {
         _listdataSehat = tips;
       });
     } catch (e) {
       print('Error fetching tips: $e');
+    } finally {
+      setState(() {
+        _isLoading = false; 
+      });
     }
   }
 
   @override
   void initState() {
     super.initState();
-    _fetchTanamanData(); // Mengambil data tanaman
-    _fetchTipsData();    // Mengambil data tips
+    _fetchTanamanData();
+    _fetchTipsData();
   }
 
   @override
@@ -64,8 +78,10 @@ class _HomeScreenState extends State<HomeScreen> {
     bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      body: Stack(
-        children: [
+      body: LoadingManager(
+        isLoading: _isLoading,
+        child: Stack(
+          children: [
           SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -303,9 +319,10 @@ class _HomeScreenState extends State<HomeScreen> {
             top: 0,
             left: 0,
             right: 0,
-            child: SearchBarWidget(controller: searchController),
-          ),
-        ],
+            child:SearchBarWidget(controller: searchController),
+            ),
+          ],
+        ),
       ),
     );
   }

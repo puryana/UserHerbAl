@@ -5,9 +5,9 @@ class TipsModel {
   final String nama_tips;
   final String gambar;
   final String deskripsi;
-  final String resep1;  // Tipe data menjadi String
-  final String resep2;  // Tipe data menjadi String
-  final String resep3;  // Tipe data menjadi String
+  final String resep1;  
+  final String resep2; 
+  final String resep3; 
 
   TipsModel({
     required this.id_tips,
@@ -22,10 +22,10 @@ class TipsModel {
   // Factory constructor untuk parsing JSON menjadi objek TipsModel
   factory TipsModel.fromJson(Map<String, dynamic> json) {
     return TipsModel(
-      id_tips: json['id_tips']?.toString() ?? '',  // Default ke string kosong jika null
+      id_tips: json['id_tips']?.toString() ?? '', 
       nama_tips: json['nama_tips'] ?? 'Tidak diketahui',
       gambar: json['gambar']?.isNotEmpty == true
-          ? '$tipsImageBaseUrl/${json['gambar']}'  // Path lengkap untuk gambar
+          ? '$tipsImageBaseUrl/${json['gambar']}' 
           : '$tipsImageBaseUrl/default.jpg',
       deskripsi: json['deskripsi'] ?? 'Tidak ada deskripsi',
       resep1: json['resep1'] ?? 'Tidak ada resep',
@@ -39,7 +39,7 @@ class TipsModel {
     return {
       'id_tips': id_tips,
       'nama_tips': nama_tips,
-      'gambar': gambar.replaceFirst('$tipsImageBaseUrl/', ''), // Hapus base URL untuk upload
+      'gambar': gambar.replaceFirst('$tipsImageBaseUrl/', ''), 
       'deskripsi': deskripsi,
       'resep1': resep1,
       'resep2': resep2,

@@ -2,18 +2,20 @@ import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:herbal/core/consts/theme_data.dart';
-import 'package:herbal/core/providers/fav_providers.dart';
-import 'package:herbal/core/providers/history_provider.dart';
-import 'package:herbal/core/providers/ramuan_providers.dart';
+import 'package:flutter_gemini/flutter_gemini.dart';
+import 'package:herbal/core/API/gemini_api.dart';
+import 'package:herbal/core/theme/theme_data.dart';
 import 'package:herbal/core/providers/theme_provider.dart';
-import 'package:herbal/core/providers/user_provider.dart';
 import 'package:herbal/root_screen.dart';
 import 'package:herbal/view/screens/auth/login.dart';
 import 'package:herbal/view/screens/auth/registrasi.dart';
+import 'package:herbal/view/screens/home_screen.dart';
 import 'package:provider/provider.dart';
 
 Future main() async { 
+    // Initialize Gemini API
+    Gemini.init(apiKey: GEMINI_API_KEY);
+    
     WidgetsFlutterBinding.ensureInitialized(); 
     await Firebase.initializeApp( 
       options: kIsWeb || Platform.isAndroid ? 
@@ -39,11 +41,6 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => ThemeProvider()),
-        // ChangeNotifierProvider(create: (_) => RamuanProvider()),
-        // ChangeNotifierProvider(create: (_) => HistoryRamProvider()),
-        ChangeNotifierProvider(create: (_) => FavoritProvider()),
-        ChangeNotifierProvider(create: (_) => UserProvider()),
-
       ],
       child: Consumer<ThemeProvider>(builder: (context, themeProvider, child){
         return MaterialApp(
@@ -57,6 +54,7 @@ class MyApp extends StatelessWidget {
           RootScreen.routeName: (context) => const RootScreen(),
           RegisterScreen.routeName: (context) => const RegisterScreen(),
           LoginScreen.routeName: (context) => const LoginScreen(),
+          HomeScreen.routeName: (context) => const HomeScreen(),
         },
         );
       },
